@@ -1,9 +1,9 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const prisma = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
-const emailService = require('../services/email');
 const Joi = require('joi');
+const prisma = require('../config/db');
+const emailService = require('../services/email');
 const validateRequest = require('../utils/validation');
 const config = require('../config/config');
 const jwtConfig = require('../config/jwt');
@@ -57,7 +57,7 @@ const login = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ errors: { email: 'Invalid email or password' } });
+      return res.status(401).json({ errors: { message: 'Invalid email or password' } });
     }
 
     if (!user.active) {
@@ -102,7 +102,7 @@ const forgotPassword = async (req, res, next) => {
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        resetToken: resetToken,
+        resetToken,
         resetTokenExpires: new Date(Date.now() + 3600000), // Token expires in 1 hour
       },
     });
@@ -158,4 +158,6 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, forgotPassword, resetPassword };
+module.exports = {
+  register, login, forgotPassword, resetPassword,
+};

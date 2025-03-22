@@ -4,16 +4,18 @@ const Joi = require('joi'); // Import Joi
 const errorHandler = (err, req, res, next) => {
   if (err instanceof createError.HttpError) {
     res.status(err.status).json({
-      message: err.message,
+      errors: { message: err.message },
     });
   } else if (err instanceof Joi.ValidationError) {
     res.status(400).json({
-      message: err.message,
+      errors: err.details.reduce((acc, curr) => {
+        acc[curr.context.key] = curr.message;
+        return acc;
+      }, {}),
     });
   } else {
-    console.error(err);
-    res.status(500).json({
-      message: 'Internal Server Error',
+    res.status(err.statusCode || 500).json({
+      errors: { message: err.message || 'Internal Server Error' },
     });
   }
 };

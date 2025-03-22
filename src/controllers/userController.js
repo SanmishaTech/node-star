@@ -1,7 +1,7 @@
-const prisma = require('../config/db');
 const createError = require('http-errors');
 const Joi = require('joi');
 const bcrypt = require('bcrypt');
+const prisma = require('../config/db');
 const validateRequest = require('../utils/validation');
 const roles = require('../config/roles');
 
@@ -23,15 +23,15 @@ const getAllUsers = async (req, res, next) => {
           { email: { contains: search } },
         ],
       },
-      role ? { role: role } : {},
-      active !== undefined ? { active: active } : {},
+      role ? { role } : {},
+      active !== undefined ? { active } : {},
     ],
   };
 
   try {
     const users = await prisma.user.findMany({
       where: whereClause,
-      skip: skip,
+      skip,
       take: limit,
       orderBy: {
         [sortBy]: sortOrder,
@@ -182,4 +182,6 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllUsers, getUserById, createUser, updateUser, deleteUser, setActiveStatus, changePassword };
+module.exports = {
+  getAllUsers, getUserById, createUser, updateUser, deleteUser, setActiveStatus, changePassword,
+};
