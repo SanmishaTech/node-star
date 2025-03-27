@@ -49,11 +49,17 @@ A simple Node.js REST API project built with Express, Prisma, and JWT.
     PORT=3000
     DATABASE_URL="mysql://root:your_password@localhost:3306/node_star"
     JWT_SECRET="your_jwt_secret"
+    EMAIL_TRANSPORTER="smtp" # Options: smtp, mailtrap, sendgrid
     EMAIL_HOST="smtp.example.com"
     EMAIL_PORT=587
     EMAIL_USER="your_email@example.com"
     EMAIL_PASSWORD="your_email_password"
     EMAIL_FROM="your_email@example.com"
+    SENDGRID_API_KEY="your_sendgrid_api_key"
+    MAILTRAP_HOST="smtp.mailtrap.io"
+    MAILTRAP_PORT=2525
+    MAILTRAP_USER="your_mailtrap_username"
+    MAILTRAP_PASSWORD="your_mailtrap_password"
     ALLOW_REGISTRATION=true
     DEFAULT_USER_ROLE='user'
     ```
@@ -93,11 +99,17 @@ The following environment variables are required:
 *   `PORT`: The port the server will listen on (default: 3000).
 *   `DATABASE_URL`: The connection string to your MySQL database.
 *   `JWT_SECRET`: A secret key used to sign JWTs.
-*   `EMAIL_HOST`: The host for your email server.
-*   `EMAIL_PORT`: The port for your email server.
-*   `EMAIL_USER`: The username for your email account.
-*   `EMAIL_PASSWORD`: The password for your email account.
+*   `EMAIL_TRANSPORTER`: The email transporter to use (options: smtp, mailtrap, sendgrid).
+*   `EMAIL_HOST`: The host for your email server (required if `EMAIL_TRANSPORTER` is `smtp`).
+*   `EMAIL_PORT`: The port for your email server (required if `EMAIL_TRANSPORTER` is `smtp`).
+*   `EMAIL_USER`: The username for your email account (required if `EMAIL_TRANSPORTER` is `smtp` or `mailtrap`).
+*   `EMAIL_PASSWORD`: The password for your email account (required if `EMAIL_TRANSPORTER` is `smtp` or `mailtrap`).
 *   `EMAIL_FROM`: The email address used as the sender.
+*   `SENDGRID_API_KEY`: The API key for SendGrid (required if `EMAIL_TRANSPORTER` is `sendgrid`).
+*   `MAILTRAP_HOST`: The host for Mailtrap (required if `EMAIL_TRANSPORTER` is `mailtrap`).
+*   `MAILTRAP_PORT`: The port for Mailtrap (required if `EMAIL_TRANSPORTER` is `mailtrap`).
+*   `MAILTRAP_USER`: The username for Mailtrap (required if `EMAIL_TRANSPORTER` is `mailtrap`).
+*   `MAILTRAP_PASSWORD`: The password for Mailtrap (required if `EMAIL_TRANSPORTER` is `mailtrap`).
 *   `ALLOW_REGISTRATION`:  Boolean value to enable or disable user registration (default: true).
 *   `DEFAULT_USER_ROLE`:  The default role assigned to newly registered users (default: 'user').
 
@@ -111,4 +123,4 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## License
 
-[License] (https://choosealicense.com/licenses/mit/)
+[License](https://choosealicense.com/licenses/mit/)

@@ -7,7 +7,7 @@ const authController = require('../controllers/authController');
  * @swagger
  * tags:
  *   name: Auth
- *   description: Authentication endpoints
+ *   description: Authentication and user management endpoints
  */
 
 /**
@@ -25,15 +25,20 @@ const authController = require('../controllers/authController');
  *             properties:
  *               name:
  *                 type: string
+ *                 description: Full name of the user
  *               email:
  *                 type: string
+ *                 description: Email address of the user
  *               password:
  *                 type: string
+ *                 description: Password for the user account
  *     responses:
  *       201:
  *         description: User registered successfully
  *       400:
- *         description: Bad request
+ *         description: Bad request (e.g., email already exists)
+ *       403:
+ *         description: Registration is disabled
  */
 router.post('/register', authController.register);
 
@@ -52,15 +57,40 @@ router.post('/register', authController.register);
  *             properties:
  *               email:
  *                 type: string
+ *                 description: Email address of the user
  *               password:
  *                 type: string
+ *                 description: Password for the user account
  *     responses:
  *       200:
  *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for authentication
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     active:
+ *                       type: boolean
+ *                     lastLogin:
+ *                       type: string
  *       400:
  *         description: Bad request
  *       401:
- *         description: Unauthorized
+ *         description: Invalid email or password
  *       403:
  *         description: Account is inactive
  */
@@ -70,7 +100,7 @@ router.post('/login', authController.login);
  * @swagger
  * /auth/forgot-password:
  *   post:
- *     summary: Handle forgot password
+ *     summary: Request a password reset link
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -81,9 +111,10 @@ router.post('/login', authController.login);
  *             properties:
  *               email:
  *                 type: string
+ *                 description: Email address of the user
  *     responses:
  *       200:
- *         description: Password reset link sent
+ *         description: Password reset link sent successfully
  *       400:
  *         description: Bad request
  *       404:
@@ -95,7 +126,7 @@ router.post('/forgot-password', authController.forgotPassword);
  * @swagger
  * /auth/reset-password/{token}:
  *   post:
- *     summary: Reset password
+ *     summary: Reset the password using the reset token
  *     tags: [Auth]
  *     parameters:
  *       - in: path
@@ -113,12 +144,11 @@ router.post('/forgot-password', authController.forgotPassword);
  *             properties:
  *               password:
  *                 type: string
+ *                 description: New password for the user account
  *     responses:
  *       200:
  *         description: Password reset successful
  *       400:
- *         description: Bad request
- *       404:
  *         description: Invalid or expired token
  */
 router.post('/reset-password/:token', authController.resetPassword);
@@ -131,7 +161,7 @@ router.post('/reset-password/:token', authController.resetPassword);
  *     tags: [Auth]
  *     responses:
  *       200:
- *         description: Logged out
+ *         description: Logged out successfully
  */
 router.post('/logout', (req, res) => {
   res.json({ message: 'Logged out' });

@@ -8,12 +8,17 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const { errorHandler } = require('./utils/errorHandler');
 const swaggerRouter = require('./swagger');
+const config = require('./config/config');
 
 const app = express();
 
 app.use(morgan('dev'));
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: config.frontendUrl, // Allow requests from this origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+}));
 app.use(express.json());
 
 app.use('/auth', authRoutes);

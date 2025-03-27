@@ -9,20 +9,20 @@ const config = require('../config/config');
 const jwtConfig = require('../config/jwt');
 
 const register = async (req, res, next) => {
+  if (process.env.ALLOW_REGISTRATION !== 'true') {
+    return res.status(403).json({ errors: { message: 'Registration is disabled' } });
+  }
+
   const schema = Joi.object({
     name: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
   });
 
-  const validationErrors = validateRequest(schema, req);
-  if (validationErrors) {
-    return res.status(400).json({ errors: validationErrors });
-  }
-
-  const { name, email, password } = req.body;
-
   try {
+    validateRequest(schema, req);
+
+    const { name, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
@@ -47,14 +47,10 @@ const login = async (req, res, next) => {
     password: Joi.string().required(),
   });
 
-  const validationErrors = validateRequest(schema, req);
-  if (validationErrors) {
-    return res.status(400).json({ errors: validationErrors });
-  }
-
-  const { email, password } = req.body;
-
   try {
+    validateRequest(schema, req);
+
+    const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ errors: { message: 'Invalid email or password' } });
@@ -74,7 +70,16 @@ const login = async (req, res, next) => {
       expiresIn: jwtConfig.expiresIn,
     });
 
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        lastLogin: user.lastLogin,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -85,17 +90,15 @@ const forgotPassword = async (req, res, next) => {
     email: Joi.string().email().required(),
   });
 
-  const validationErrors = validateRequest(schema, req);
-  if (validationErrors) {
-    return res.status(400).json({ errors: validationErrors });
-  }
-
-  const { email } = req.body;
-
   try {
+    validateRequest(schema, req);
+
+    const { email, resetUrl } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(404).json({ errors: { email: 'User not found' } });
+      return setTimeout(() => {
+        res.status(404).json({ errors: { message: 'User not found' } });
+      }, 3000);
     }
 
     const resetToken = uuidv4();
@@ -107,9 +110,13 @@ const forgotPassword = async (req, res, next) => {
       },
     });
 
-    const resetLink = `http://yourdomain.com/reset-password/${resetToken}`; // Replace with your actual domain
-    const emailContent = `Please click this link to reset your password: <a href="${resetLink}">${resetLink}</a>`;
-    await emailService.sendEmail(email, 'Password Reset Request', emailContent);
+    const resetLink = `${resetUrl}/${resetToken}`; // Replace with your actual domain
+    const templateData = {
+      name: user.name,
+      resetLink,
+      appName: config.appName,
+    };
+    await emailService.sendEmail(email, 'Password Reset Request', 'passwordReset', templateData);
 
     res.json({ message: 'Password reset link sent' });
   } catch (error) {
@@ -122,15 +129,12 @@ const resetPassword = async (req, res, next) => {
     password: Joi.string().min(6).required(),
   });
 
-  const validationErrors = validateRequest(schema, req);
-  if (validationErrors) {
-    return res.status(400).json({ errors: validationErrors });
-  }
-
-  const { password } = req.body;
-  const { token } = req.params;
-
   try {
+    validateRequest(schema, req);
+
+    const { password } = req.body;
+    const { token } = req.body;
+
     const user = await prisma.user.findFirst({
       where: {
         resetToken: token,
@@ -139,7 +143,7 @@ const resetPassword = async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(400).json({ errors: { token: 'Invalid or expired token' } });
+      return res.status(400).json({ errors: { message: 'Invalid or expired token' } });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
