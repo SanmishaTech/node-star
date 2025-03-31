@@ -35,7 +35,7 @@ const register = async (req, res, next) => {
     res.status(201).json(user);
   } catch (error) {
     if (error.code === 'P2002') {
-      return res.status(400).json({ errors: { email: 'Email already exists' } });
+      return res.status(400).json({ errors: { message: 'Email already exists' } });
     }
     next(error);
   }

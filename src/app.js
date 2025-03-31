@@ -6,6 +6,7 @@ const createError = require('http-errors');
 require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const profileRoutes = require('./routes/profile');
 const { errorHandler } = require('./utils/errorHandler');
 const swaggerRouter = require('./swagger');
 const config = require('./config/config');
@@ -23,6 +24,7 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/profile', profileRoutes);
 app.use(swaggerRouter); // Add this line to include Swagger documentation
 
 app.use((req, res, next) => {
