@@ -20,7 +20,7 @@ const getProfile = async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ errors: { message: 'User not found' } });
     }
 
     res.json(user);
@@ -61,7 +61,7 @@ const updateProfile = async (req, res, next) => {
     res.json(updatedUser);
   } catch (error) {
     if (error.code === 'P2002') {
-      return res.status(400).json({ message: 'Email already exists' });
+      return res.status(400).json({ errors: { message: 'Email already exists' } });
     }
     next(error);
   }
@@ -82,12 +82,12 @@ const changePassword = async (req, res, next) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ errors: { message: 'User not found' } });
     }
 
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Current password is incorrect' });
+      return res.status(401).json({ errors: { message: 'Current password is incorrect' } });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);

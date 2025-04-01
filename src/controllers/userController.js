@@ -30,6 +30,14 @@ const getAllUsers = async (req, res, next) => {
 
   try {
     const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        active: true,
+        lastLogin: true,
+      },
       where: whereClause,
       skip,
       take: limit,
