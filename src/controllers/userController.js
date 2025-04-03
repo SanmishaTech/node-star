@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const prisma = require('../config/db');
 const validateRequest = require('../utils/validation');
 const roles = require('../config/roles');
+const ExcelJS = require('exceljs');
+const aclService = require('../services/aclService');
 
 const getAllUsers = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
@@ -14,12 +16,18 @@ const getAllUsers = async (req, res, next) => {
   const active = req.query.active === 'true' ? true : req.query.active === 'false' ? false : undefined;
   const sortBy = req.query.sortBy || 'id';
   const sortOrder = req.query.sortOrder === 'desc' ? 'desc' : 'asc';
+  const exportToExcel = req.query.export === 'true'; // Check if export is requested
+
+  // Check if the user has the 'users.export' permission using ACL service
+  if (exportToExcel && !aclService.hasPermission(req.user, 'users.export')) {
+    return res.status(403).json({ errors: { message: 'You do not have permission to export users' } });
+  }
 
   const whereClause = {
     AND: [
       {
         OR: [
-          { name: { contains: search } },
+          { name: { contains: search} },
           { email: { contains: search } },
         ],
       },
@@ -39,12 +47,46 @@ const getAllUsers = async (req, res, next) => {
         lastLogin: true,
       },
       where: whereClause,
-      skip,
-      take: limit,
-      orderBy: {
-        [sortBy]: sortOrder,
-      },
+      skip: exportToExcel ? undefined : skip, // Skip pagination if exporting to Excel
+      take: exportToExcel ? undefined : limit, // Skip limit if exporting to Excel
+      orderBy: exportToExcel ? undefined : { [sortBy]: sortOrder }, // Skip sorting if exporting to Excel
     });
+
+    if (exportToExcel) {
+      // Create a new workbook and worksheet
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Users');
+
+      // Add headers
+      worksheet.columns = [
+        { header: 'ID', key: 'id', width: 10 },
+        { header: 'Name', key: 'name', width: 30 },
+        { header: 'Email', key: 'email', width: 30 },
+        { header: 'Role', key: 'role', width: 15 },
+        { header: 'Active', key: 'active', width: 10 },
+        { header: 'Last Login', key: 'lastLogin', width: 20 },
+      ];
+
+      // Add rows
+      users.forEach((user) => {
+        worksheet.addRow({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          active: user.active ? 'Yes' : 'No',
+          lastLogin: user.lastLogin ? user.lastLogin.toISOString() : 'N/A',
+        });
+      });
+
+      // Set response headers for file download
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=users.xlsx');
+
+      // Write the workbook to the response
+      await workbook.xlsx.write(res);
+      return res.end();
+    }
 
     const totalUsers = await prisma.user.count({
       where: whereClause,

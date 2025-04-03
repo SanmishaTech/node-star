@@ -71,6 +71,11 @@ const acl = require('../middleware/acl');
  *           enum: [asc, desc]
  *           default: asc
  *         description: Sort order
+ *       - in: query
+ *         name: export
+ *         schema:
+ *           type: boolean
+ *         description: Export user data to Excel
  *     responses:
  *       200:
  *         description: List of all users

@@ -1,7 +1,7 @@
 module.exports = {
+  'roles.read': ['admin'],
   'users.read': ['admin', 'user'],
   'users.write': ['admin'],
   'users.delete': ['admin'],
-  'auth.login': ['guest', 'user', 'admin'],
-  'auth.register': ['guest'],
+  'users.export': ['admin'],
 };

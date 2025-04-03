@@ -1,17 +1,21 @@
 const createError = require('http-errors');
-const permissions = require('../config/permissions');
+const aclService = require('../services/aclService');
 
 module.exports = (permission) => async (req, res, next) => {
-  if (!req.user || !req.user.role) {
-    return next(createError(403, 'User role not found'));
+  try {
+    if (!req.user || !req.user.role) {
+      return next(createError(403, 'User role not found'));
+    }
+
+    // Use aclService to check if the user has the required permission
+    const hasPermission = await aclService.hasPermission(req.user, permission);
+
+    if (hasPermission) {
+      return next();
+    }
+
+    return next(createError(403, 'Insufficient permissions'));
+  } catch (error) {
+    return next(createError(500, 'Error checking permissions'));
   }
-
-  const userRole = req.user.role;
-
-  if (permissions[permission] && permissions[permission].includes(userRole)) {
-    return next();
-  }
-
-  console.log(permission);
-  return next(createError(403, 'Insufficient permissions'));
 };
