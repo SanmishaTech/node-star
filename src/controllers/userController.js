@@ -1,10 +1,10 @@
 const createError = require('http-errors');
 const Joi = require('joi');
 const bcrypt = require('bcrypt');
+const ExcelJS = require('exceljs');
 const prisma = require('../config/db');
 const validateRequest = require('../utils/validation');
 const roles = require('../config/roles');
-const ExcelJS = require('exceljs');
 const aclService = require('../services/aclService');
 
 const getAllUsers = async (req, res, next) => {
@@ -12,7 +12,7 @@ const getAllUsers = async (req, res, next) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
   const search = req.query.search || '';
-  const role = req.query.role || '';
+  const roles = req.query.roles ? req.query.roles.split(',') : []; // Handle multiple roles as a comma-separated string
   const active = req.query.active === 'true' ? true : req.query.active === 'false' ? false : undefined;
   const sortBy = req.query.sortBy || 'id';
   const sortOrder = req.query.sortOrder === 'desc' ? 'desc' : 'asc';
@@ -27,11 +27,11 @@ const getAllUsers = async (req, res, next) => {
     AND: [
       {
         OR: [
-          { name: { contains: search} },
+          { name: { contains: search } },
           { email: { contains: search } },
         ],
       },
-      role ? { role } : {},
+      roles.length > 0 ? { role: { in: roles } } : {}, // Filter by multiple roles
       active !== undefined ? { active } : {},
     ],
   };

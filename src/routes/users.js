@@ -49,10 +49,10 @@ const acl = require('../middleware/acl');
  *           type: string
  *         description: Search term for user name or email
  *       - in: query
- *         name: role
+ *         name: roles
  *         schema:
  *           type: string
- *         description: Role of the user
+ *         description: Comma-separated list of roles to filter users (e.g., "admin,editor")
  *       - in: query
  *         name: active
  *         schema:
