@@ -124,6 +124,7 @@ const createUser = async (req, res, next) => {
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
     role: Joi.string().valid(...Object.values(roles)).required(),
+    active: Joi.boolean().optional(),
   });
 
   const validationErrors = validateRequest(schema, req);
