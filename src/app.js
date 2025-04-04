@@ -18,7 +18,7 @@ app.use(morgan('dev'));
 app.use(helmet());
 app.use(cors({
   origin: config.frontendUrl, // Allow requests from this origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 }));
 app.use(express.json());
