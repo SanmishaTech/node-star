@@ -305,17 +305,21 @@ router.patch('/:id/status', auth, acl('users.write'), userController.setActiveSt
  *           schema:
  *             type: object
  *             properties:
- *               password:
+ *               currentPassword:
  *                 type: string
+ *                 description: The current password of the user
+ *               newPassword:
+ *                 type: string
+ *                 description: The new password to set for the user
  *     responses:
  *       200:
- *         description: User password updated
+ *         description: User password updated successfully
  *       400:
- *         description: Bad request
+ *         description: Bad request (e.g., invalid input or weak password)
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized (e.g., invalid credentials)
  *       403:
- *         description: Forbidden
+ *         description: Forbidden (e.g., insufficient permissions)
  *       404:
  *         description: User not found
  */

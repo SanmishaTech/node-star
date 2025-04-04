@@ -99,6 +99,7 @@ const getAllUsers = async (req, res, next) => {
       totalPages,
       totalUsers,
     });
+
   } catch (error) {
     next(error);
   }
@@ -143,7 +144,7 @@ const createUser = async (req, res, next) => {
     res.status(201).json(user);
   } catch (error) {
     if (error.code === 'P2002') {
-      return res.status(400).json({ errors: { email: 'Email already exists' } });
+      return res.status(400).json({ errors: { message: 'Email already exists' } });
     }
     next(error);
   }
@@ -169,7 +170,9 @@ const updateUser = async (req, res, next) => {
         ...req.body,
       },
     });
+
     res.json(updatedUser);
+
   } catch (error) {
     if (error.code === 'P2002') {
       return next(createError(400, 'Email already exists'));
